@@ -1,4 +1,4 @@
-Import Relevant Libraries
+#Import Relevant Libraries
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -31,24 +31,24 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, ConfusionMatrixDisplay
 
-Reading data from CSV file
+#Reading data from CSV file
 senti_data=pd.read_csv('uk_pm.csv')
 
-Displaying first 10 rows and info about data
+#Displaying first 10 rows and info about data
 senti_data.head(5)
 senti_data.shape
 senti_data.info()
 
-Data Cleaning
+#Data Cleaning
 Checking for missing values
 senti_data.isnull().sum()
 
-Replacing missing values with NA
+#Replacing missing values with NA
 senti_data.fillna('', inplace=True)
 senti_data.isnull().sum()
 
 
-Pre Processing Tweets
+#Pre Processing Tweets
 def rem_short(data1):
     data1=re.sub("’","'",data1)
     data1=re.sub("isn't",'is not',data1)
@@ -96,11 +96,11 @@ def sep_rem(data):
     return cleaned_text
 data['text_clean']= data['text_clean'].apply(lambda x: sep_rem(x))
 
-Showing difference between normal tweet and cleaned tweet
+#Showing difference between normal tweet and cleaned tweet
 Print(data['text'][222])
 Print(data['text_clean'][222])
 
-Finding sentiment using Roberta model
+#Finding sentiment using Roberta model
 MODEL = f"cardiffnlp/twitter-roberta-base-sentiment" 
 tokenizer = AutoTokenizer.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL)
@@ -129,14 +129,14 @@ data['sentiment_generated'] = data['text_clean'].apply(classify_sentiment)
 
 print(data.head(5))
 
-Finding and plotting count of each sentiment found
+#Finding and plotting count of each sentiment found
 senti_count = data['sentiment_generated'].value_counts()
 senti_count.plot(kind='bar')
 plt.xlabel('Name')
 plt.ylabel('Count')
 plt.title('Count of Different Sentiment')
 
-Plotting word cloud for each sentiment
+#Plotting word cloud for each sentiment
 grouped = data.groupby('sentiment_generated')
 stopwords = set(STOPWORDS)
 # Generate word cloud for each value
@@ -151,10 +151,10 @@ for sentiment, group in grouped:
     plt.axis('off')
     plt.show()
 
-Saving processed dataset to CSV file for further testing and training
+#Saving processed dataset to CSV file for further testing and training
 data.to_csv('SentiAnalysis_RishiSunak.csv', encoding='utf-8')
 
-Importing CSV file to a new df for model traingn and testing
+#Importing CSV file to a new df for model traingn and testing
 model_data =pd.read_csv('SentiAnalysis_RishiSunak.csv')
 print(model_data.head(5))
 
@@ -168,33 +168,33 @@ def map_sentiment(nature):
         return 0
 model_data['sentiment'] = model_data['sentiment_generated'].apply(lambda x:map_sentiment(x))
 
-MACHINE LEARNING THROUGH SUPPORT VECTOR MACHINE
+#MACHINE LEARNING THROUGH SUPPORT VECTOR MACHINE
 
-Reprocess the text and extract features
+#Reprocess the text and extract features
 vectorizer = TfidfVectorizer(max_features=5000)
 X = vectorizer.fit_transform(model_data['text_clean'])
 y = model_data['sentiment']
 
-Split the dataset into train and test sets
+#Split the dataset into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=4)
 
-Displays the shape or dimensions of the training and testing data
+#Displays the shape or dimensions of the training and testing data
 print("X Train " ,X_train.shape)
 print("X Test " ,X_test.shape)
 print("Y Train " ,y_train.shape)
 print("Y Test " ,y_test.shape)
 
-Train the SVM model
+#Train the SVM model
 svm = SVC(kernel='linear', probability=True)svm_model.fit(X_train, y_train)
 t0 = time.time()
 svm.fit(X_train, y_train)
 svm_training_time=time.time()-t0
 
-Predict the sentiment on the test set
+#Predict the sentiment on the test set
 y_pred = svm.predict(X_test)
 
 
-Displaying results
+#Displaying results
 print(classification_report(y_test, y_pred))
 svm_report=classification_report(y_test, y_pred,output_dict=True)
 svm_accuracy=metrics.accuracy_score(y_test, y_pred)
@@ -210,11 +210,11 @@ print ("precision:",svm_precision)
 print ("accuracy:", svm_accuracy)
 print('tranining time : ',svm_training_time)
 
-Plotting Confusion matrix
+#Plotting Confusion matrix
 cm = confusion_matrix(y_test, y_pred)
 ConfusionMatrixDisplay(confusion_matrix=cm).plot();
 
-Plotting Accuracy and Loss graph
+#Plotting Accuracy and Loss graph
 svm_accuracy=svm_accuracy*100
 svm_accuracy=round(svm_accuracy, 2)  
 svm_acc=[0,round(svm_accuracy, 2)]
@@ -228,7 +228,7 @@ plt.ylabel("Loss")
 plt.text(0, 2, text, fontsize = 13,rotation=36)
 plt.show()
 
-Plotting ROC Curve
+#Plotting ROC Curve
 def get_all_roc_coordinates(y_real, y_proba):
     tpr_list = [0]
     fpr_list = [0]
@@ -270,17 +270,17 @@ for i in range(len(classes_svm)):
     roc_auc_ovr[c] = roc_auc_score(df_aux['sentiment'], df_aux['prob'])  
 plt.tight_layout()
 
-MACHINE LEARNING THROUGH RANDOM FOREST CLASSIFIER
+#MACHINE LEARNING THROUGH RANDOM FOREST CLASSIFIER
 
- Preprocess the text and extract features
+#Preprocess the text and extract features
 vectorizer = TfidfVectorizer(max_features=5000)
 X = vectorizer.fit_transform(model_data['text_clean'])
 y = model_data['sentiment']
 
-Split the dataset into train and test sets
+#Split the dataset into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=4)
 
-Model Training
+#Model Training
 from sklearn.ensemble import RandomForestClassifier
 classifier_rm = RandomForestClassifier(random_state=10)
 
@@ -288,10 +288,10 @@ t0 = time.time()
 classifier_rm.fit(X_train, y_train)
 rf_training_time=time.time()-t0
 
-Predicting Sentiment
+#Predicting Sentiment
 y_pred_rf = classifier_rm.predict(X_test)
 
-Printing output
+#Printing output
 rf_report=classification_report(y_test, y_pred_rf,output_dict=True)
 rf_accuracy=metrics.accuracy_score(y_test, y_pred_rf)
 rf_precision=metrics.precision_score(y_test, y_pred_rf, average='weighted')
@@ -306,11 +306,11 @@ print ("precision:",rf_precision)
 print ("accuracy:", rf_accuracy)
 print('rf training time :',rf_training_time)
 
-Plotting Confusion Matrix
+#Plotting Confusion Matrix
 cm = confusion_matrix(y_test, y_pred_rf)
 ConfusionMatrixDisplay(confusion_matrix=cm).plot()
 
-Plotting Accuracy Loss Graph
+#Plotting Accuracy Loss Graph
 rf_accuracy=rf_accuracy*100
 rf_accuracy=round(rf_accuracy, 2) 
 acc=[0,round(rf_accuracy, 2)]
@@ -325,7 +325,7 @@ plt.text(3, 5, text, fontsize = 13,rotation=36)
 plt.show()
 
 
-Plotting ROC Curve
+#Plotting ROC Curve
 score = roc_auc_score(y_test, y_prob_rf, multi_class='ovr')
 import seaborn as sns
 plt.figure(figsize = (12, 8))
@@ -344,7 +344,7 @@ for i in range(len(classes_rf)):
     roc_auc_ovr[c] = roc_auc_score(df_aux['sentiment'], df_aux['prob'])
 plt.tight_layout()
 
-SVM and RF F1 Score Comparison
+#SVM and RF F1 Score Comparison
 fig, ax = plt.subplots()
 model = ['svm', 'rf']
 accuracy = [fl_score[0], fl_score[1]]
@@ -359,48 +359,48 @@ ax.legend(title='model',loc='center left', bbox_to_anchor=(1, 0.5))
 
 plt.show()
 
-MACHINE LEARNING THROUGH LSTM	
+#MACHINE LEARNING THROUGH LSTM	
 
- Preprocess the text and extract features
+#Preprocess the text and extract features
 X = model_data['text_clean']
 y = model_data['sentiment']
 label_encoder = LabelEncoder()
 y = label_encoder.fit_transform(y)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-Tokenize the tweets
+#Tokenize the tweets
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts(X_train)
 vocab_size = len(tokenizer.word_index) + 1
 
-Convert the tweets to sequences
+#Convert the tweets to sequences
 X_train = tokenizer.texts_to_sequences(X_train)
 X_test = tokenizer.texts_to_sequences(X_test)
 
- Pad the sequences to have the same length
+#Pad the sequences to have the same length
 max_length = 100  # maximum length of a tweet
 X_train = pad_sequences(X_train, maxlen=max_length)
 X_test = pad_sequences(X_test, maxlen=max_length)
 
-Model Training
+#Model Training
 t0 = time.time()
 model = Sequential()
 model.add(Embedding(vocab_size, 128, input_length=max_length))
 model.add(LSTM(128, dropout=0.2))
 model.add(Dense(1, activation='sigmoid'))
 
-Compile the model
+#Compile the model
 model.summary()
 history=model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 lstm_training_time=time.time()-t0
 
-Train the model
+#Train the model
 model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=64)
 
-Testing Model
+#Testing Model
 y_pred_lstm = model.predict(X_test).round()
 
-Displaying output
+#Displaying output
 from sklearn.metrics import confusion_matrix,classification_report, precision_score,auc,precision_recall_curve
 import seaborn as sns
 
@@ -412,11 +412,11 @@ lstm_recall = lstm_report['macro avg']['recall']
 lstm_f1_score= lstm_report['macro avg']['f1-score']
 print('lstm training time :',lstm_training_time)
 
-Plotting Confusion matrix
+#Plotting Confusion matrix
 cm = confusion_matrix(y_test, y_pred)
 ConfusionMatrixDisplay(confusion_matrix=cm).plot();
 
-Accuracy and Loss Graph
+#Accuracy and Loss Graph
 lstm_accuracy=lstm_accuracy*100
 lstm_accuracy=round(lstm_accuracy, 2)
 def plot_learning_curve(history,epochs):
@@ -440,7 +440,7 @@ def plot_learning_curve(history,epochs):
     plt.show()
 plot_learning_curve(history,10)
 
-Accuracy of SVM, LSTM, RF
+#Accuracy of SVM, LSTM, RF
 
 fig, ax = plt.subplots()
 
